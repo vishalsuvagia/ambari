@@ -81,6 +81,17 @@
     <on-ambari-upgrade add="true"/>
   </property>
   <property>
+    <name>sysprep_skip_hive_schema_create</name>
+    <display-name>Whether to skip creating the Hive Metastore DB schema on sysprepped cluster</display-name>
+    <value>false</value>
+    <description>Whether to skip creating the Hive Metastore DB schema on sysprepped cluster, during fresh install</description>
+    <value-attributes>
+      <overridable>true</overridable>
+      <type>boolean</type>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+  <property>
     <name>smokeuser</name>
     <display-name>Smoke User</display-name>
     <value>ambari-qa</value>
@@ -178,6 +189,21 @@ gpgcheck=0</value>
     <property-type>VALUE_FROM_PROPERTY_FILE</property-type>
     <value-attributes>
       <property-file-name>stack_tools.json</property-file-name>
+      <property-file-type>json</property-file-type>
+      <read-only>true</read-only>
+      <overridable>false</overridable>
+      <visible>false</visible>
+    </value-attributes>
+    <on-ambari-upgrade add="true"/>
+  </property>
+    <!-- Define stack_packages property in the base stack. DO NOT override this property for each stack version -->
+  <property>
+    <name>stack_packages</name>
+    <value/>
+    <description>Associations between component and stack-select tools.</description>
+    <property-type>VALUE_FROM_PROPERTY_FILE</property-type>
+    <value-attributes>
+      <property-file-name>stack_packages.json</property-file-name>
       <property-file-type>json</property-file-type>
       <read-only>true</read-only>
       <overridable>false</overridable>
