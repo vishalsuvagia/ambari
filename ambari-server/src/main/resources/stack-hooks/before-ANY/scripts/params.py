@@ -109,6 +109,9 @@ def is_secure_port(port):
 # force the use of "current" in the hook
 hdfs_user_nofile_limit = default("/configurations/hadoop-env/hdfs_user_nofile_limit", "128000")
 hadoop_home = stack_select.get_hadoop_dir("home")
+hadoop_hdfs_home = stack_select.get_hadoop_dir("hdfs_home")
+hadoop_mapred_home = stack_select.get_hadoop_dir("mapred_home")
+hadoop_yarn_home = stack_select.get_hadoop_dir("yarn_home")
 hadoop_libexec_dir = stack_select.get_hadoop_dir("libexec")
 hadoop_lib_home = stack_select.get_hadoop_dir("lib")
 
@@ -124,7 +127,13 @@ hadoop_java_io_tmpdir = os.path.join(tmp_dir, "hadoop_java_io_tmpdir")
 datanode_max_locked_memory = config['configurations']['hdfs-site']['dfs.datanode.max.locked.memory']
 is_datanode_max_locked_memory_set = not is_empty(config['configurations']['hdfs-site']['dfs.datanode.max.locked.memory'])
 
-mapreduce_libs_path = "/usr/hdp/current/hadoop-mapreduce-client/*"
+mapreduce_libs_path = format("{hadoop_mapred_home}/*,{hadoop_mapred_home}/lib/*")
+
+tez_home = '/usr/lib/tez'
+tez_conf_dir = '/etc/tez/conf'
+# hadoop parameters for stacks that support rolling_upgrade
+if stack_version_formatted and check_stack_feature(StackFeature.ROLLING_UPGRADE, stack_version_formatted):
+  tez_home = format("{stack_root}/current/tez-client")
 
 if not security_enabled:
   hadoop_secure_dn_user = '""'
@@ -184,7 +193,7 @@ zeppelin_group = config['configurations']['zeppelin-env']["zeppelin_group"]
 user_group = config['configurations']['cluster-env']['user_group']
 
 ganglia_server_hosts = default("/clusterHostInfo/ganglia_server_hosts", [])
-namenode_host = default("/clusterHostInfo/namenode_hosts", [])
+hdfs_client_hosts = default("/clusterHostInfo/hdfs_client_hosts", [])
 hbase_master_hosts = default("/clusterHostInfo/hbase_master_hosts", [])
 oozie_servers = default("/clusterHostInfo/oozie_server", [])
 falcon_server_hosts = default("/clusterHostInfo/falcon_server_hosts", [])
@@ -195,7 +204,7 @@ zeppelin_master_hosts = default("/clusterHostInfo/zeppelin_master_hosts", [])
 version_for_stack_feature_checks = get_stack_feature_version(config)
 
 
-has_namenode = not len(namenode_host) == 0
+has_hdfs_clients = not len(hdfs_client_hosts) == 0
 has_ganglia_server = not len(ganglia_server_hosts) == 0
 has_tez = 'tez-site' in config['configurations']
 has_hbase_masters = not len(hbase_master_hosts) == 0
@@ -249,7 +258,7 @@ for ns, dfs_ha_namenode_ids in dfs_ha_namenode_ids_all_ns.iteritems():
   if found:
     break
 
-if has_namenode or dfs_type == 'HCFS':
+if has_hdfs_clients or dfs_type == 'HCFS':
     hadoop_conf_dir = conf_select.get_hadoop_conf_dir()
     hadoop_conf_secure_dir = os.path.join(hadoop_conf_dir, "secure")
 
